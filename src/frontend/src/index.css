@@ -1,0 +1,288 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: "General Sans", sans-serif;
+    --font-body: "DM Sans", sans-serif;
+    --font-mono: "Geist Mono", monospace;
+    --radius: 0.5rem;
+
+    --background: 0.98 0 0;
+    --foreground: 0.12 0 0;
+    --card: 0.96 0 0;
+    --card-foreground: 0.12 0 0;
+    --popover: 0.96 0 0;
+    --popover-foreground: 0.12 0 0;
+
+    --primary: 0.7 0.22 260;
+    --primary-foreground: 0.98 0 0;
+
+    --secondary: 0.92 0 0;
+    --secondary-foreground: 0.2 0 0;
+    --muted: 0.88 0 0;
+    --muted-foreground: 0.45 0 0;
+
+    --accent: 0.65 0.2 130;
+    --accent-foreground: 0.98 0 0;
+
+    --destructive: 0.58 0.22 25;
+    --destructive-foreground: 0.98 0 0;
+
+    --border: 0.85 0 0;
+    --input: 0.92 0 0;
+    --ring: 0.65 0.2 260;
+
+    --chart-1: 0.65 0.25 130;
+    --chart-2: 0.72 0.2 70;
+    --chart-3: 0.65 0.2 40;
+    --chart-4: 0.58 0.22 25;
+    --chart-5: 0.55 0.25 260;
+
+    --sidebar: 0.96 0 0;
+    --sidebar-foreground: 0.12 0 0;
+    --sidebar-primary: 0.7 0.22 260;
+    --sidebar-primary-foreground: 0.98 0 0;
+    --sidebar-accent: 0.92 0 0;
+    --sidebar-accent-foreground: 0.2 0 0;
+    --sidebar-border: 0.88 0 0;
+    --sidebar-ring: 0.65 0.2 260;
+
+    --category-pwn: 0.65 0.2 15;
+    --category-web: 0.55 0.25 260;
+    --category-crypto: 0.62 0.2 40;
+    --category-forensics: 0.48 0.18 280;
+    --category-rev: 0.58 0.22 25;
+    --category-misc: 0.68 0.15 160;
+    --category-osint: 0.72 0.2 70;
+
+    --difficulty-easy: 0.6 0.25 130;
+    --difficulty-medium: 0.72 0.2 70;
+    --difficulty-hard: 0.65 0.2 40;
+    --difficulty-insane: 0.58 0.22 25;
+
+    --code-bg: 0.08 0 0;
+    --code-border: 0.22 0 0;
+    --code-glow: 0.65 0.2 130;
+  }
+
+  .dark {
+    --background: 0.08 0 0;
+    --foreground: 0.95 0 0;
+    --card: 0.12 0 0;
+    --card-foreground: 0.95 0 0;
+    --popover: 0.14 0 0;
+    --popover-foreground: 0.95 0 0;
+
+    --primary: 0.75 0.23 260;
+    --primary-foreground: 0.08 0 0;
+
+    --secondary: 0.18 0 0;
+    --secondary-foreground: 0.9 0 0;
+    --muted: 0.18 0 0;
+    --muted-foreground: 0.6 0 0;
+
+    --accent: 0.7 0.25 130;
+    --accent-foreground: 0.08 0 0;
+
+    --destructive: 0.65 0.2 25;
+    --destructive-foreground: 0.08 0 0;
+
+    --border: 0.22 0 0;
+    --input: 0.14 0 0;
+    --ring: 0.75 0.23 260;
+
+    --chart-1: 0.7 0.25 130;
+    --chart-2: 0.75 0.22 70;
+    --chart-3: 0.7 0.22 40;
+    --chart-4: 0.65 0.23 25;
+    --chart-5: 0.6 0.26 260;
+
+    --sidebar: 0.12 0 0;
+    --sidebar-foreground: 0.95 0 0;
+    --sidebar-primary: 0.75 0.23 260;
+    --sidebar-primary-foreground: 0.08 0 0;
+    --sidebar-accent: 0.18 0 0;
+    --sidebar-accent-foreground: 0.9 0 0;
+    --sidebar-border: 0.18 0 0;
+    --sidebar-ring: 0.75 0.23 260;
+
+    --category-pwn: 0.7 0.2 15;
+    --category-web: 0.65 0.25 260;
+    --category-crypto: 0.7 0.2 40;
+    --category-forensics: 0.55 0.2 280;
+    --category-rev: 0.65 0.22 25;
+    --category-misc: 0.75 0.18 160;
+    --category-osint: 0.8 0.22 70;
+
+    --difficulty-easy: 0.7 0.25 130;
+    --difficulty-medium: 0.8 0.22 70;
+    --difficulty-hard: 0.7 0.22 40;
+    --difficulty-insane: 0.65 0.22 25;
+
+    --code-bg: 0.06 0 0;
+    --code-border: 0.18 0 0;
+    --code-glow: 0.75 0.23 260;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/assets/fonts/GeneralSans.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("/assets/fonts/DMSans.woff2") format("woff2");
+  font-weight: 400 500 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/fonts/GeistMono.woff2") format("woff2");
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+/* ——— Prism.js overrides for dark terminal theme ——— */
+code[class*="language-"],
+pre[class*="language-"] {
+  color: oklch(0.9 0.02 260);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  tab-size: 2;
+  hyphens: none;
+}
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: oklch(0.55 0.02 260);
+  font-style: italic;
+}
+.token.punctuation {
+  color: oklch(0.65 0.03 260);
+}
+.token.namespace {
+  opacity: 0.7;
+}
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: oklch(0.72 0.2 25);
+}
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: oklch(0.75 0.18 130);
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: oklch(0.78 0.16 200);
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: oklch(0.72 0.22 260);
+}
+.token.function,
+.token.class-name {
+  color: oklch(0.78 0.18 70);
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: oklch(0.75 0.2 40);
+}
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .code-glow {
+    box-shadow: 0 0 16px oklch(var(--code-glow) / 0.15);
+  }
+
+  .code-glow-active {
+    box-shadow: 0 0 20px oklch(var(--code-glow) / 0.25);
+  }
+
+  .category-pwn {
+    @apply bg-[oklch(var(--category-pwn))] text-white;
+  }
+
+  .category-web {
+    @apply bg-[oklch(var(--category-web))] text-white;
+  }
+
+  .category-crypto {
+    @apply bg-[oklch(var(--category-crypto))] text-white;
+  }
+
+  .category-forensics {
+    @apply bg-[oklch(var(--category-forensics))] text-white;
+  }
+
+  .category-rev {
+    @apply bg-[oklch(var(--category-rev))] text-white;
+  }
+
+  .category-misc {
+    @apply bg-[oklch(var(--category-misc))] text-white;
+  }
+
+  .category-osint {
+    @apply bg-[oklch(var(--category-osint))] text-white;
+  }
+
+  .difficulty-easy {
+    @apply bg-[oklch(var(--difficulty-easy))] text-white;
+  }
+
+  .difficulty-medium {
+    @apply bg-[oklch(var(--difficulty-medium))] text-white;
+  }
+
+  .difficulty-hard {
+    @apply bg-[oklch(var(--difficulty-hard))] text-white;
+  }
+
+  .difficulty-insane {
+    @apply bg-[oklch(var(--difficulty-insane))] text-white;
+  }
+}

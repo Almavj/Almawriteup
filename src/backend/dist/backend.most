@@ -1,0 +1,54 @@
+// Version: 1.0.0
+type Category__861415648 =
+  {#crypto; #forensics; #misc; #osint; #pwn; #rev; #web};
+type Difficulty__238526550 = {#easy; #hard; #insane; #medium};
+type ExternalBlob__246066408 = Blob;
+type ImageRecord__75166742 =
+  {
+    blob : ExternalBlob__246066408;
+    filename : Text;
+    mimeType : Text;
+    thumbnailUrl : Text;
+    uploadedAt : Timestamp__301639476;
+    url : Text
+  };
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Timestamp__301639476 = Int;
+type Writeup__844817024 =
+  {
+    category : Category__861415648;
+    content : Text;
+    createdAt : Timestamp__301639476;
+    dateSolved : Text;
+    difficulty : Difficulty__238526550;
+    draft : Bool;
+    flag : Text;
+    flagHidden : Bool;
+    id : Nat;
+    slug : Text;
+    tags : [Text];
+    title : Text;
+    updatedAt : Timestamp__301639476
+  };
+actor {
+  stable adminRef :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?Principal]];
+      var elementIndex : Nat__490723111
+    };
+  stable images :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ImageRecord__75166742]];
+      var elementIndex : Nat__490723111
+    };
+  stable var nextId : Nat;
+  stable writeups :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?Writeup__844817024]];
+      var elementIndex : Nat__490723111
+    }
+};

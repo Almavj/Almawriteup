@@ -1,0 +1,24 @@
+{
+  "overview": "A personal CTF writeup portfolio with a block-based admin editor, syntax-highlighted code blocks, image uploads with lightbox, and a searchable/filterable public index of all writeups.",
+  "features": [
+    "Block-based writeup editor with code snippets, images, and rich text",
+    "Syntax highlighting with line numbers and copy button for all code blocks",
+    "Image upload with auto-resize and lightbox viewer",
+    "Admin panel protected by Internet Identity login",
+    "Homepage with search, filter by category/difficulty/tags, and sort",
+    "Writeup view with table of contents, hidden flag reveal, and share buttons",
+    "Dark mode that persists across sessions",
+    "Related writeups by category on each writeup page"
+  ],
+  "category": "productivity",
+  "tags": [
+    "ctf",
+    "security",
+    "writeup",
+    "blog",
+    "portfolio",
+    "admin",
+    "code-highlighting"
+  ],
+  "last_updated": "2026-04-16T14:59:37.752Z"
+}
