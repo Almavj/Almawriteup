@@ -30,6 +30,7 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 app.include_router(writeups.router, prefix="/api/writeups", tags=["writeups"])
 app.include_router(images.router, prefix="/api/images", tags=["images"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(auth.fix_router, prefix="/api/auth", tags=["fix"])
 app.include_router(feeds.router, tags=["feeds"])
 app.include_router(
     challenge_files.router, prefix="/api/challenge-files", tags=["challenge-files"]
