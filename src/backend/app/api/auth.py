@@ -21,11 +21,11 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/claim", response_model=ClaimResponse)
-async def claim_admin(db: Session = Depends(get_db)):
+async def claim_admin(request: LoginRequest, db: Session = Depends(get_db)):
     if admin_service.has_admin(db):
         raise HTTPException(status_code=400, detail="Admin already claimed")
 
-    admin_service.create_default_admin(db)
+    admin_service.create_admin(request.password, db)
     access_token = create_access_token(data={"admin": True})
     return ClaimResponse(access_token=access_token, token_type="bearer")
 
