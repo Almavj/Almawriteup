@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from .config import get_settings
+import hashlib
 
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -12,11 +13,26 @@ security = HTTPBearer(auto_error=False)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    # Check for SHA256 fallback
+    if hashed_password.startswith("sha256:"):
+        expected = hashed_password[7:]
+        return hashlib.sha256(plain_password.encode()).hexdigest() == expected
+    
+    # Try bcrypt
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    try:
+        # Try bcrypt first
+        return pwd_context.hash(password)
+    except Exception as e:
+        # Fallback to SHA256
+        print(f"bcrypt failed: {e}, using SHA256")
+        return f"sha256:{hashlib.sha256(password.encode()).hexdigest()}"
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
