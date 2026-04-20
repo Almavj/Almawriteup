@@ -32,3 +32,15 @@ async def claim_admin(db: Session = Depends(get_db)):
 @router.get("/status", response_model=dict)
 async def admin_status(_: bool = Depends(get_current_admin)):
     return {"isAdmin": True}
+
+@router.get("/debug-password")
+async def debug_password():
+    from ..core.config import get_settings
+    settings = get_settings()
+    password = settings.ADMIN_PASSWORD
+    return {
+        "password_length": len(password),
+        "password_first_10_chars": password[:10] if password else "None",
+        "password_exists": bool(password),
+        "password_from_env": password
+    }
