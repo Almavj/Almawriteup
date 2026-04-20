@@ -476,7 +476,7 @@ export function WriteupPage() {
             <div className="flex items-center gap-1.5 text-muted-foreground ml-1">
               <Calendar className="w-3.5 h-3.5" />
               <span className="font-mono text-xs">
-                {formatDate(writeup.dateSolved)}
+                {formatDate(writeup.date_solved)}
               </span>
             </div>
           </div>
@@ -520,7 +520,7 @@ export function WriteupPage() {
             {hasFlag && (
               <FlagSection
                 flag={writeup.flag}
-                flagHidden={writeup.flagHidden}
+                flagHidden={writeup.flag_hidden}
               />
             )}
           </div>

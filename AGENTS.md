@@ -15,13 +15,30 @@
 
 **Backend** (run from `src/backend/`):
 
-- **install**: `mops install`
-- **typecheck**: `mops check --fix`
-- **build**: `mops build`
+- **install**: `pip install -r requirements.txt`
+- **run**: `uvicorn app.main:app --reload --port 8000`
+- **env setup**: Copy `.env.example` to `.env` and set your admin password
 
-**Backend and frontend integration** (run from root):
+**Development** (run from root):
 
-- **generate bindings**: `pnpm bindgen` This step is necessary to ensure the frontend can call the backend methods.
+- **start backend**: `pnpm dev:backend`
+- **start frontend**: `pnpm dev:frontend`
+
+## Backend API
+
+The FastAPI backend runs on `http://localhost:8000` and provides:
+
+- `POST /api/auth/login` - Login with password
+- `POST /api/auth/claim` - Claim admin (first-time setup)
+- `GET /api/writeups` - List published writeups (paginated)
+- `GET /api/writeups/{id}` - Get writeup by ID
+- `GET /api/writeups/slug/{slug}` - Get writeup by slug
+- `POST /api/writeups` - Create writeup (admin only)
+- `PUT /api/writeups/{id}` - Update writeup (admin only)
+- `DELETE /api/writeups/{id}` - Delete writeup (admin only)
+- `POST /api/images/upload` - Upload image (admin only)
+- `GET /rss.xml` - RSS feed
+- `GET /sitemap.xml` - Sitemap
 
 ## Learnings
 

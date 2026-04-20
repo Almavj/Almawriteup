@@ -45,7 +45,6 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { ExternalBlob } from "../backend";
 import { CodeBlock } from "../components/CodeBlock";
 import { ContentRenderer } from "../components/ContentRenderer";
 import { Layout } from "../components/Layout";
@@ -55,31 +54,37 @@ import {
   useDeleteWriteup,
   useUpdateWriteup,
   useUploadImage,
+  useUploadFile,
   useWriteupById,
 } from "../hooks/useBackend";
 import {
   CATEGORY_LABELS,
-  Category,
+  type Category,
   DIFFICULTY_LABELS,
-  Difficulty,
+  type Difficulty,
   LANGUAGE_OPTIONS,
 } from "../types";
+import { api } from "../api";
 import type { ContentBlock } from "../types";
 
-// ——————————————————————————————————————————————
-// Types
-// ——————————————————————————————————————————————
+interface ChallengeFileMeta {
+  filename: string;
+  original_name: string;
+  url: string;
+}
 
 interface EditorMeta {
   title: string;
   slug: string;
-  category: Category;
-  difficulty: Difficulty;
+  category: string;
+  difficulty: string;
   dateSolved: string;
   tags: string[];
   flag: string;
   flagHidden: boolean;
   draft: boolean;
+  challenge_url: string;
+  challenge_files: ChallengeFileMeta[];
 }
 
 interface CodeModalState {
@@ -89,10 +94,6 @@ interface CodeModalState {
   lineNumbers: boolean;
 }
 
-// ——————————————————————————————————————————————
-// Helpers
-// ——————————————————————————————————————————————
-
 function slugify(title: string): string {
   return title
     .toLowerCase()
@@ -101,10 +102,6 @@ function slugify(title: string): string {
 }
 
 const AUTO_SAVE_INTERVAL = 30_000;
-
-// ——————————————————————————————————————————————
-// Block editor components
-// ——————————————————————————————————————————————
 
 function BlockControls({
   onUp,
@@ -281,10 +278,6 @@ function ImageBlockEditorView({
   );
 }
 
-// ——————————————————————————————————————————————
-// Code Block Modal
-// ——————————————————————————————————————————————
-
 function CodeBlockModal({
   state,
   onStateChange,
@@ -310,7 +303,6 @@ function CodeBlockModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-4">
-          {/* Language + line numbers */}
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex-1 min-w-[160px] space-y-1">
               <Label className="font-mono text-xs text-muted-foreground">
@@ -358,7 +350,6 @@ function CodeBlockModal({
             </div>
           </div>
 
-          {/* Code textarea */}
           <div className="space-y-1">
             <Label className="font-mono text-xs text-muted-foreground">
               Code
@@ -379,7 +370,6 @@ function CodeBlockModal({
             />
           </div>
 
-          {/* Preview */}
           {state.code.trim() && (
             <div className="space-y-1">
               <p className="font-mono text-xs text-muted-foreground">Preview</p>
@@ -415,10 +405,6 @@ function CodeBlockModal({
     </Dialog>
   );
 }
-
-// ——————————————————————————————————————————————
-// Preview Modal
-// ——————————————————————————————————————————————
 
 function PreviewModal({
   open,
@@ -503,10 +489,6 @@ function PreviewModal({
   );
 }
 
-// ——————————————————————————————————————————————
-// Image Upload Zone
-// ——————————————————————————————————————————————
-
 function ImageUploadZone({
   onUpload,
   uploading,
@@ -565,27 +547,84 @@ function ImageUploadZone({
   );
 }
 
-// ——————————————————————————————————————————————
-// Main Editor
-// ——————————————————————————————————————————————
+function FileUploadZone({
+  onUpload,
+  uploading,
+}: {
+  onUpload: (file: File) => void;
+  uploading: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const handleDrop = (e: DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) onUpload(file);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => inputRef.current?.click()}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+      disabled={uploading}
+      aria-label="Upload file"
+      data-ocid="editor.file_dropzone"
+      className={`border-2 border-dashed rounded-lg px-3 py-1.5 flex items-center gap-2 cursor-pointer transition-colors h-7 font-mono text-xs ${
+        dragging
+          ? "border-primary bg-primary/5 text-primary"
+          : "border-border text-muted-foreground hover:border-primary/50 hover:bg-muted/20 hover:text-foreground"
+      }`}
+    >
+      {uploading ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      ) : (
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      )}
+      <span>{uploading ? "Uploading..." : "File"}</span>
+      <input
+        ref={inputRef}
+        type="file"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onUpload(file);
+          e.target.value = "";
+        }}
+        data-ocid="editor.file_upload_input"
+      />
+    </button>
+  );
+}
 
 const DEFAULT_META: EditorMeta = {
   title: "",
   slug: "",
-  category: Category.web,
-  difficulty: Difficulty.medium,
+  category: "web",
+  difficulty: "medium",
   dateSolved: new Date().toISOString().slice(0, 10),
   tags: [],
   flag: "",
   flagHidden: true,
   draft: true,
+  challenge_url: "",
+  challenge_files: [],
 };
 
 function WriteupEditorInner({
   id,
   mode,
 }: {
-  id: bigint | null;
+  id: number | null;
   mode: "new" | "edit";
 }) {
   const navigate = useNavigate();
@@ -596,6 +635,7 @@ function WriteupEditorInner({
   const updateWriteup = useUpdateWriteup();
   const deleteWriteup = useDeleteWriteup();
   const uploadImage = useUploadImage();
+  const uploadFile = useUploadFile();
 
   const draftKey =
     mode === "new" ? "ctf-writeup-new" : `ctf-writeup-draft-${id}`;
@@ -617,7 +657,6 @@ function WriteupEditorInner({
     lineNumbers: true,
   });
 
-  // Load existing writeup
   useEffect(() => {
     if (mode === "edit" && existingWriteup) {
       setMeta({
@@ -625,11 +664,13 @@ function WriteupEditorInner({
         slug: existingWriteup.slug,
         category: existingWriteup.category,
         difficulty: existingWriteup.difficulty,
-        dateSolved: existingWriteup.dateSolved,
+        dateSolved: existingWriteup.date_solved,
         tags: existingWriteup.tags,
         flag: existingWriteup.flag,
-        flagHidden: existingWriteup.flagHidden,
+        flagHidden: existingWriteup.flag_hidden,
         draft: existingWriteup.draft,
+        challenge_url: (existingWriteup as any).challenge_url || "",
+        challenge_files: (existingWriteup as any).challenge_files || [],
       });
       setSlugManuallyEdited(true);
       try {
@@ -643,7 +684,6 @@ function WriteupEditorInner({
     }
   }, [mode, existingWriteup]);
 
-  // Check for saved draft in localStorage
   useEffect(() => {
     const saved = localStorage.getItem(draftKey);
     if (saved && mode === "new") {
@@ -651,7 +691,6 @@ function WriteupEditorInner({
     }
   }, [draftKey, mode]);
 
-  // Auto-save to localStorage every 30s
   useEffect(() => {
     const timer = setInterval(() => {
       const state = { meta, blocks };
@@ -660,7 +699,6 @@ function WriteupEditorInner({
     return () => clearInterval(timer);
   }, [meta, blocks, draftKey]);
 
-  // Auth redirect
   useEffect(() => {
     if (!isInitializing && !isAuthenticated) {
       navigate({ to: "/admin/login" });
@@ -694,7 +732,6 @@ function WriteupEditorInner({
     setShowDraftBanner(false);
   };
 
-  // Block manipulation
   const moveBlock = (index: number, dir: "up" | "down") => {
     setBlocks((prev) => {
       const next = [...prev];
@@ -720,18 +757,10 @@ function WriteupEditorInner({
     setBlocks((prev) => [...prev, block]);
   };
 
-  // Image upload handler
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      const blob = ExternalBlob.fromBytes(bytes);
-      const url = await uploadImage.mutateAsync({
-        filename: `${Date.now()}-${file.name}`,
-        mimeType: file.type,
-        blob,
-      });
+      const url = await uploadImage.mutateAsync(file);
       addBlock({ type: "image", url, caption: "" });
       toast.success("Image uploaded");
     } catch (err) {
@@ -741,7 +770,24 @@ function WriteupEditorInner({
     }
   };
 
-  // Code block insert
+  const handleFileUpload = async (file: File) => {
+    setImageUploading(true);
+    try {
+      const result = await uploadFile.mutateAsync(file);
+      addBlock({ 
+        type: "file", 
+        url: result.url, 
+        filename: file.name,
+        description: "" 
+      });
+      toast.success("File uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const insertCodeBlock = () => {
     addBlock({
       type: "code",
@@ -757,45 +803,56 @@ function WriteupEditorInner({
     });
   };
 
-  // Save writeup
   const handleSave = async () => {
+    console.log("[handleSave] Called, mode:", mode, "id:", id, "meta:", meta);
     if (!meta.title.trim()) {
+      console.log("[handleSave] Title empty, showing error");
       toast.error("Title is required");
       return;
     }
     setSaving(true);
+    console.log("[handleSave] Saving flag set to true");
     const input = {
       title: meta.title,
       slug: meta.slug || slugify(meta.title),
-      category: meta.category,
-      difficulty: meta.difficulty,
-      dateSolved: meta.dateSolved,
+      category: meta.category as Category,
+      difficulty: meta.difficulty as Difficulty,
+      date_solved: meta.dateSolved,
       tags: meta.tags,
       flag: meta.flag,
-      flagHidden: meta.flagHidden,
+      flag_hidden: meta.flagHidden,
       draft: meta.draft,
+      challenge_url: meta.challenge_url,
+      challenge_files: meta.challenge_files,
       content: JSON.stringify({ blocks }),
     };
+    console.log("[handleSave] Input prepared:", input);
+    console.log("[handleSave] Draft status:", meta.draft);
 
     try {
       if (mode === "new") {
-        await createWriteup.mutateAsync(input);
+        console.log("[handleSave] Creating new writeup...");
+        const result = await createWriteup.mutateAsync(input);
+        console.log("[handleSave] Create result:", result);
         localStorage.removeItem(draftKey);
         toast.success("Writeup created!");
         navigate({ to: "/admin/dashboard" });
       } else if (id !== null) {
-        await updateWriteup.mutateAsync({ id, input });
+        console.log("[handleSave] Updating writeup id:", id);
+        const result = await updateWriteup.mutateAsync({ id, input });
+        console.log("[handleSave] Update result:", result);
         localStorage.removeItem(draftKey);
         toast.success("Writeup saved!");
       }
     } catch (err) {
+      console.error("[handleSave] Error:", err);
       toast.error(err instanceof Error ? err.message : "Save failed");
     } finally {
+      console.log("[handleSave] Finally block, setting saving to false");
       setSaving(false);
     }
   };
 
-  // Delete writeup
   const handleDelete = async () => {
     if (id === null) return;
     setDeleting(true);
@@ -831,7 +888,6 @@ function WriteupEditorInner({
         className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8"
         data-ocid="writeup_editor.page"
       >
-        {/* Draft restore banner */}
         {showDraftBanner && (
           <div
             className="flex items-center justify-between gap-4 bg-card border border-primary/30 rounded-lg px-4 py-3"
@@ -866,7 +922,6 @@ function WriteupEditorInner({
           </div>
         )}
 
-        {/* Page header */}
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-xl font-display font-semibold text-foreground">
             {mode === "new" ? "New Writeup" : "Edit Writeup"}
@@ -895,8 +950,12 @@ function WriteupEditorInner({
               </Button>
             )}
             <Button
+              type="button"
               size="sm"
-              onClick={handleSave}
+              onClick={() => {
+                console.log("[Save] Button clicked, saving:", saving);
+                handleSave();
+              }}
               disabled={saving}
               className="font-mono text-xs"
               data-ocid="editor.save_button"
@@ -913,10 +972,65 @@ function WriteupEditorInner({
                 </span>
               )}
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={async () => {
+                if (!meta.title.trim()) {
+                  toast.error("Title is required");
+                  return;
+                }
+                setSaving(true);
+                const input = {
+                  title: meta.title,
+                  slug: meta.slug || slugify(meta.title),
+                  category: meta.category as Category,
+                  difficulty: meta.difficulty as Difficulty,
+                  date_solved: meta.dateSolved,
+                  tags: meta.tags,
+                  flag: meta.flag,
+                  flag_hidden: meta.flagHidden,
+                  draft: false,
+                  challenge_url: meta.challenge_url,
+                  challenge_files: meta.challenge_files,
+                  content: JSON.stringify({ blocks }),
+                };
+                try {
+                  if (mode === "new") {
+                    await createWriteup.mutateAsync(input);
+                    localStorage.removeItem(draftKey);
+                    toast.success("Writeup published!");
+                    navigate({ to: "/admin/dashboard" });
+                  } else if (id !== null) {
+                    await updateWriteup.mutateAsync({ id, input });
+                    localStorage.removeItem(draftKey);
+                    toast.success("Writeup published!");
+                  }
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Publish failed");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+              className="font-mono text-xs"
+              data-ocid="editor.publish_button"
+            >
+              {saving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                  </svg>
+                  Publish
+                </span>
+              )}
+            </Button>
           </div>
         </div>
 
-        {/* Metadata section */}
         <div
           className="bg-card border border-border rounded-xl p-6 space-y-5"
           data-ocid="editor.metadata_section"
@@ -925,7 +1039,6 @@ function WriteupEditorInner({
             Metadata
           </h2>
 
-          {/* Title + Slug */}
           <div className="space-y-2">
             <Label
               htmlFor="title"
@@ -958,7 +1071,6 @@ function WriteupEditorInner({
             </div>
           </div>
 
-          {/* Category + Difficulty */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="font-mono text-xs text-muted-foreground">
@@ -966,7 +1078,7 @@ function WriteupEditorInner({
               </Label>
               <Select
                 value={meta.category}
-                onValueChange={(v) => updateMeta({ category: v as Category })}
+                onValueChange={(v) => updateMeta({ category: v })}
               >
                 <SelectTrigger
                   className="font-mono text-xs"
@@ -989,9 +1101,7 @@ function WriteupEditorInner({
               </Label>
               <Select
                 value={meta.difficulty}
-                onValueChange={(v) =>
-                  updateMeta({ difficulty: v as Difficulty })
-                }
+                onValueChange={(v) => updateMeta({ difficulty: v })}
               >
                 <SelectTrigger
                   className="font-mono text-xs"
@@ -1014,7 +1124,6 @@ function WriteupEditorInner({
             </div>
           </div>
 
-          {/* Date + Draft toggle */}
           <div className="grid grid-cols-2 gap-4 items-start">
             <div className="space-y-1.5">
               <Label
@@ -1049,7 +1158,107 @@ function WriteupEditorInner({
             </div>
           </div>
 
-          {/* Tags */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="challengeUrl"
+              className="font-mono text-xs text-muted-foreground"
+            >
+              Challenge URL (for web challenges)
+            </Label>
+            <Input
+              id="challengeUrl"
+              type="url"
+              value={meta.challenge_url}
+              onChange={(e) => updateMeta({ challenge_url: e.target.value })}
+              placeholder="https://challenge.example.com:8080"
+              className="font-mono text-xs"
+              data-ocid="editor.challenge_url_input"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-mono text-xs text-muted-foreground">
+              Challenge Files
+            </Label>
+            <div className="border border-dashed border-border rounded-lg p-4">
+              <input
+                type="file"
+                id="challengeFileUpload"
+                multiple
+                className="hidden"
+                onChange={async (e) => {
+                  const files = e.target.files;
+                  if (!files) return;
+                  for (const file of files) {
+                    try {
+                      const result = await api.uploadChallengeFile(
+                        id || 0,
+                        file
+                      );
+                      updateMeta({
+                        challenge_files: [
+                          ...meta.challenge_files,
+                          {
+                            filename: result.filename,
+                            original_name: result.original_name,
+                            url: result.url,
+                          },
+                        ],
+                      });
+                      toast.success(`Uploaded: ${file.name}`);
+                    } catch (err) {
+                      toast.error(`Failed to upload: ${file.name}`);
+                    }
+                  }
+                  e.target.value = "";
+                }}
+              />
+              <label
+                htmlFor="challengeFileUpload"
+                className="flex flex-col items-center justify-center cursor-pointer py-4"
+              >
+                <FileImage className="h-8 w-8 text-muted-foreground mb-2" />
+                <span className="text-xs text-muted-foreground">
+                  Click to upload challenge files
+                </span>
+                <span className="text-xs text-muted-foreground mt-1">
+                  (zip, binary, source code, etc.)
+                </span>
+              </label>
+            </div>
+            {meta.challenge_files.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {meta.challenge_files.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between bg-muted/30 rounded px-3 py-2"
+                  >
+                    <a
+                      href={file.url}
+                      download={file.original_name}
+                      className="text-xs text-primary hover:underline truncate flex-1"
+                    >
+                      {file.original_name}
+                    </a>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        updateMeta({
+                          challenge_files: meta.challenge_files.filter(
+                            (_, i) => i !== idx
+                          ),
+                        });
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label className="font-mono text-xs text-muted-foreground">
               Tags
@@ -1120,7 +1329,6 @@ function WriteupEditorInner({
             )}
           </div>
 
-          {/* Flag */}
           <div className="space-y-2">
             <Label
               htmlFor="flag"
@@ -1153,9 +1361,7 @@ function WriteupEditorInner({
           </div>
         </div>
 
-        {/* Block Editor */}
         <div className="space-y-4" data-ocid="editor.blocks_section">
-          {/* Toolbar */}
           <div className="flex items-center gap-1.5 flex-wrap bg-card border border-border rounded-lg px-3 py-2">
             <span className="font-mono text-xs text-muted-foreground mr-2">
               Add:
@@ -1213,9 +1419,12 @@ function WriteupEditorInner({
               onUpload={handleImageUpload}
               uploading={imageUploading}
             />
+            <FileUploadZone
+              onUpload={handleFileUpload}
+              uploading={imageUploading}
+            />
           </div>
 
-          {/* Blocks list */}
           {blocks.length === 0 ? (
             <div
               className="border-2 border-dashed border-border rounded-xl py-12 text-center space-y-2"
@@ -1230,14 +1439,10 @@ function WriteupEditorInner({
             <div className="space-y-3">
               {blocks.map((block, index) => (
                 <div
-                  key={`block-${
-                    // biome-ignore lint/suspicious/noArrayIndexKey: block order changes with moves
-                    index
-                  }`}
+                  key={`block-${index}`}
                   className="group flex gap-2 items-start"
                   data-ocid={`editor.block.item.${index + 1}`}
                 >
-                  {/* Block content */}
                   <div className="flex-1 min-w-0 bg-card border border-border rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-2">
                       <span className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest px-1.5 py-0.5 rounded bg-muted/40">
@@ -1304,7 +1509,6 @@ function WriteupEditorInner({
                     )}
                   </div>
 
-                  {/* Controls */}
                   <BlockControls
                     onUp={() => moveBlock(index, "up")}
                     onDown={() => moveBlock(index, "down")}
@@ -1320,7 +1524,6 @@ function WriteupEditorInner({
         </div>
       </div>
 
-      {/* Code Block Modal */}
       <CodeBlockModal
         state={codeModal}
         onStateChange={(s) => setCodeModal((prev) => ({ ...prev, ...s }))}
@@ -1335,7 +1538,6 @@ function WriteupEditorInner({
         }
       />
 
-      {/* Preview Modal */}
       <PreviewModal
         open={showPreview}
         onClose={() => setShowPreview(false)}
@@ -1343,7 +1545,6 @@ function WriteupEditorInner({
         blocks={blocks}
       />
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={showDeleteConfirm}
         onOpenChange={(open) => !open && setShowDeleteConfirm(false)}
@@ -1394,16 +1595,12 @@ function WriteupEditorInner({
   );
 }
 
-// ——————————————————————————————————————————————
-// Exported page components
-// ——————————————————————————————————————————————
-
 export function NewWriteupPage() {
   return <WriteupEditorInner id={null} mode="new" />;
 }
 
 export function EditWriteupPage() {
   const { id } = useParams({ from: "/admin/writeup/$id" });
-  const numId = id ? BigInt(id) : null;
+  const numId = id ? Number.parseInt(id, 10) : null;
   return <WriteupEditorInner id={numId} mode="edit" />;
 }

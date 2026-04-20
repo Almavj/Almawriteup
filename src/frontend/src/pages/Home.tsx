@@ -330,10 +330,14 @@ export function HomePage() {
 
     return [...list].sort((a, b) => {
       if (sortParam === "oldest")
-        return Number(a.createdAt) - Number(b.createdAt);
+        return (
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
       if (sortParam === "hardest")
         return DIFFICULTY_RANK[b.difficulty] - DIFFICULTY_RANK[a.difficulty];
-      return Number(b.createdAt) - Number(a.createdAt);
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     });
   }, [
     allWriteups,
@@ -604,7 +608,6 @@ export function HomePage() {
               {isLoading ? (
                 <div className="grid gap-3" data-ocid="home.loading_state">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: skeleton items are static
                     <SkeletonCard key={i} />
                   ))}
                 </div>

@@ -166,15 +166,7 @@ export function Layout({ children }: LayoutProps) {
             </span>
           </div>
           <p className="text-xs text-muted-foreground font-body text-center">
-            © {currentYear}. Built with love using{" "}
-            <a
-              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${hostname}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              caffeine.ai
-            </a>
+            © {currentYear}. Built with love.
           </p>
           <div className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground/50">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />

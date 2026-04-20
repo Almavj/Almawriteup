@@ -77,8 +77,8 @@ function WriteupRow({
   index: number;
   onDelete: (writeup: Writeup) => void;
 }) {
-  const date = writeup.dateSolved
-    ? new Date(writeup.dateSolved).toLocaleDateString("en-US", {
+  const date = writeup.date_solved
+    ? new Date(writeup.date_solved).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -220,7 +220,8 @@ export function AdminDashboardPage() {
   const totalImages = images?.length ?? 0;
 
   const sortedWriteups = [...(writeups ?? [])].sort(
-    (a, b) => Number(b.createdAt) - Number(a.createdAt),
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
   return (

@@ -1,5 +1,5 @@
 {
-  "name": "@caffeine/template-app",
+  "name": "ctf-writeup-hub",
   "type": "module",
   "engines": {
     "node": ">=16.0.0",
@@ -11,12 +11,8 @@
     "typecheck": "pnpm -r --if-present run typecheck",
     "check": "pnpm -r --if-present run check",
     "fix": "pnpm -r --if-present run fix",
-    "bindgen": "caffeine-bindgen --did-file ./src/backend/dist/backend.did --out-dir ./src/frontend/src --actor-interface-file --force"
+    "dev:backend": "cd src/backend && python -m uvicorn app.main:app --reload --port 8000",
+    "dev:frontend": "cd src/frontend && pnpm dev"
   },
-  "devDependencies": {
-    "sharp": "^0.34.4"
-  },
-  "dependencies": {
-    "@caffeineai/core-infrastructure": "^0.2.0"
-  }
+  "devDependencies": {}
 }

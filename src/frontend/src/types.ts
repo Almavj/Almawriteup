@@ -1,16 +1,12 @@
-import { Category, Difficulty } from "./backend";
+export { Category, Difficulty } from "./api";
 
-export { Category, Difficulty };
-
-// Re-export backend types for convenience
 export type {
   Writeup,
   WriteupInput,
   PagedWriteups,
   ImageRecord,
-} from "./backend";
+} from "./api";
 
-// Content block types for JSON-based writeup content
 export interface ParagraphBlock {
   type: "paragraph";
   content: string;
@@ -44,6 +40,19 @@ export interface ImageBlockData {
   alt?: string;
 }
 
+export interface FileBlockData {
+  type: "file";
+  url: string;
+  filename: string;
+  description?: string;
+}
+
+export interface LinkBlockData {
+  type: "link";
+  url: string;
+  label: string;
+}
+
 export interface DividerBlock {
   type: "divider";
 }
@@ -60,6 +69,8 @@ export type ContentBlock =
   | ListBlock
   | CodeBlockData
   | ImageBlockData
+  | FileBlockData
+  | LinkBlockData
   | DividerBlock
   | NoteBlock;
 
@@ -67,39 +78,38 @@ export interface WriteupContent {
   blocks: ContentBlock[];
 }
 
-// Category metadata
-export const CATEGORY_LABELS: Record<Category, string> = {
-  [Category.pwn]: "pwn",
-  [Category.web]: "web",
-  [Category.crypto]: "crypto",
-  [Category.forensics]: "forensics",
-  [Category.rev]: "rev",
-  [Category.misc]: "misc",
-  [Category.osint]: "osint",
+export const CATEGORY_LABELS: Record<string, string> = {
+  pwn: "pwn",
+  web: "web",
+  crypto: "crypto",
+  forensics: "forensics",
+  rev: "rev",
+  misc: "misc",
+  osint: "osint",
 };
 
-export const CATEGORY_COLORS: Record<Category, string> = {
-  [Category.pwn]: "category-pwn",
-  [Category.web]: "category-web",
-  [Category.crypto]: "category-crypto",
-  [Category.forensics]: "category-forensics",
-  [Category.rev]: "category-rev",
-  [Category.misc]: "category-misc",
-  [Category.osint]: "category-osint",
+export const CATEGORY_COLORS: Record<string, string> = {
+  pwn: "category-pwn",
+  web: "category-web",
+  crypto: "category-crypto",
+  forensics: "category-forensics",
+  rev: "category-rev",
+  misc: "category-misc",
+  osint: "category-osint",
 };
 
-export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  [Difficulty.easy]: "easy",
-  [Difficulty.medium]: "medium",
-  [Difficulty.hard]: "hard",
-  [Difficulty.insane]: "insane",
+export const DIFFICULTY_LABELS: Record<string, string> = {
+  easy: "easy",
+  medium: "medium",
+  hard: "hard",
+  insane: "insane",
 };
 
-export const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  [Difficulty.easy]: "difficulty-easy",
-  [Difficulty.medium]: "difficulty-medium",
-  [Difficulty.hard]: "difficulty-hard",
-  [Difficulty.insane]: "difficulty-insane",
+export const DIFFICULTY_COLORS: Record<string, string> = {
+  easy: "difficulty-easy",
+  medium: "difficulty-medium",
+  hard: "difficulty-hard",
+  insane: "difficulty-insane",
 };
 
 export const LANGUAGE_OPTIONS = [

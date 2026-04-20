@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { ContentBlock, WriteupContent } from "../types";
 import { CodeBlock } from "./CodeBlock";
 import { ImageBlock } from "./ImageBlock";
+import DOMPurify from "dompurify";
 
 interface ContentRendererProps {
   content: string;
@@ -15,8 +16,7 @@ function renderBlock(block: ContentBlock, index: number) {
         <div
           key={index}
           className="prose prose-invert prose-sm max-w-none text-foreground/90 leading-relaxed"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted content from admin editor
-          dangerouslySetInnerHTML={{ __html: block.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.content) }}
         />
       );
 
@@ -50,7 +50,6 @@ function renderBlock(block: ContentBlock, index: number) {
             className="list-decimal list-inside space-y-1.5 pl-2 text-foreground/90"
           >
             {block.items.map((item, idx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: list items may not be unique strings
               <li key={`li-${idx}`} className="text-sm leading-relaxed">
                 {item}
               </li>
@@ -64,7 +63,6 @@ function renderBlock(block: ContentBlock, index: number) {
           className="list-disc list-inside space-y-1.5 pl-2 text-foreground/90"
         >
           {block.items.map((item, idx) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: list items may not be unique strings
             <li key={`li-${idx}`} className="text-sm leading-relaxed">
               {item}
             </li>
@@ -91,6 +89,56 @@ function renderBlock(block: ContentBlock, index: number) {
           caption={block.caption}
           alt={block.alt}
         />
+      );
+
+    case "file":
+      return (
+        <div
+          key={index}
+          className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors"
+        >
+          <svg className="w-8 h-8 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-sm text-foreground truncate">
+              {block.filename}
+            </p>
+            {block.description && (
+              <p className="font-mono text-xs text-muted-foreground truncate">
+                {block.description}
+              </p>
+            )}
+          </div>
+          <a
+            href={block.url}
+            download={block.filename}
+            className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md font-mono text-xs hover:bg-primary/90 transition-colors"
+          >
+            Download
+          </a>
+        </div>
+      );
+
+    case "link":
+      return (
+        <a
+          key={index}
+          href={block.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors"
+        >
+          <svg className="w-8 h-8 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+          <span className="font-mono text-sm text-foreground truncate">
+            {block.label || block.url}
+          </span>
+          <svg className="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       );
 
     case "divider":

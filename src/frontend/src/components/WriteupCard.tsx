@@ -79,7 +79,7 @@ export function WriteupCard({
         <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Calendar className="w-3 h-3" />
-            <span className="font-mono text-[11px]">{writeup.dateSolved}</span>
+            <span className="font-mono text-[11px]">{writeup.date_solved}</span>
           </div>
           {writeup.tags.length > 0 && (
             <div className="flex items-center gap-1 flex-wrap">

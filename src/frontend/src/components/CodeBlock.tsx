@@ -8,7 +8,8 @@ import "prismjs/components/prism-c";
 import "prismjs/components/prism-cpp";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-ruby";
-import "prismjs/components/prism-php";
+// prism-php has known issues with tokenizePlaceholders - skip it
+// import "prismjs/components/prism-php";
 import "prismjs/components/prism-sql";
 import "prismjs/components/prism-json";
 import "prismjs/components/prism-yaml";
@@ -83,7 +84,12 @@ export function CodeBlock({
     if (codeRef.current) {
       // Set content manually to avoid Prism encoding issues
       codeRef.current.textContent = displayedCode;
-      Prism.highlightElement(codeRef.current);
+      try {
+        Prism.highlightElement(codeRef.current);
+      } catch (e) {
+        // Fallback: syntax highlighting failed, just show plain text
+        console.warn("Prism highlighting failed:", e);
+      }
     }
   }, [displayedCode]);
 

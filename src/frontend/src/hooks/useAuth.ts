@@ -1,18 +1,36 @@
-import { useInternetIdentity } from "@caffeineai/core-infrastructure";
+import { useCallback, useEffect, useState } from "react";
+import { api } from "../api";
 
 export function useAuth() {
-  const {
-    identity,
-    login,
-    clear: logout,
-    loginStatus,
-    isAuthenticated,
-    isInitializing,
-    isLoggingIn,
-    loginError,
-  } = useInternetIdentity();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  const principal = identity?.getPrincipal();
+  useEffect(() => {
+    const token = api.getToken();
+    setIsAuthenticated(!!token);
+    setIsInitializing(false);
+  }, []);
+
+  const login = useCallback(async (password: string) => {
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      await api.login(password);
+      setIsAuthenticated(true);
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : "Login failed");
+      throw err;
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    api.logout();
+    setIsAuthenticated(false);
+  }, []);
 
   return {
     isAuthenticated,
@@ -20,10 +38,6 @@ export function useAuth() {
     isLoggingIn,
     login,
     logout,
-    loginStatus,
     loginError,
-    identity,
-    principal,
-    principalText: principal?.toText(),
   };
 }
