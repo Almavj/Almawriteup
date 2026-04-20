@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 COPY src/backend/requirements.txt .
 # Upgrade pip, setuptools, and wheel to avoid build issues
 RUN pip install --upgrade pip setuptools wheel
-# Note: sharpen==0.1.0 is not on PyPI - install available packages
+# Note: sharpen==0.1.0 is not on PyPI - issnstall available packages
 # Also add pydantic-settings which is required by the app
 RUN pip install --no-cache-dir -r requirements.txt || \
     pip install --no-cache-dir \
@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt || \
     python-jose[cryptography]==3.3.0 \
     passlib[bcrypt]==1.7.4 \
     python-dotenv==1.0.1 \
-    pillow==10.2.0 \
+    pillow \
     aiofiles==23.2.1 \
     pydantic-settings
 
