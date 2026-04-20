@@ -16,10 +16,15 @@ app = FastAPI(title="CTF Writeup Hub API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Accept"],
+    allow_origins=[
+        "https://almawriteup-web.onrender.com",
+        "https://alma-ctfwriteups.41m4.me",  # Your custom domain
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,  # Changed to True
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Added OPTIONS
+    allow_headers=["Content-Type", "Authorization", "Accept"],  # Added Accept
 )
 
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
