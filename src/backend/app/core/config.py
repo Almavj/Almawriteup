@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     THUMBNAIL_SIZE: int = 200
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
-    CORS_ORIGINS: str = '["http://localhost:5173", "http://localhost:3000"]'
+    CORS_ORIGINS: str = '["http://localhost:5173", "http://localhost:3000", "https://almawriteup-web.onrender.com", "https://almawriteup-api.onrender.com"]'
     MAX_CONTENT_LENGTH: int = 100000
     MAX_FILE_SIZE: int = 5 * 1024 * 1024
 
