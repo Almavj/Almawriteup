@@ -8,7 +8,7 @@ import os
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./ctf_writeups.db"
     SECRET_KEY: str = "dev-secret-key-change-in-production"
-    ADMIN_PASSWORD: str = "admin"
+    ADMIN_PASSWORD: str = ""
     UPLOAD_DIR: str = "./uploads"
     MAX_IMAGE_WIDTH: int = 800
     THUMBNAIL_SIZE: int = 200
